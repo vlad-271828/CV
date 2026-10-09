@@ -24,9 +24,8 @@ def get_bayer_masks(n_rows, n_cols):
 
 def get_colored_img(raw_img):
     mask = get_bayer_masks(raw_img.shape[0], raw_img.shape[1])
-    print(np.repeat(raw_img[:, :, None], 3, axis=2))
-    answer = np.where(mask, np.repeat(raw_img[:, :, None], 3, axis=2), 0)
-    return answer
+    return np.where(mask, np.repeat(raw_img[:, :, None], 3, axis=2), 0)
+
 
 
     """
@@ -42,8 +41,10 @@ def get_colored_img(raw_img):
 
 
 def get_raw_img(colored_img):
-
-
+    mask = get_bayer_masks(colored_img.shape[0], colored_img.shape[1])
+    return np.where(mask[:, :, 0], colored_img[:, :, 0], 0) + \
+             np.where(mask[:, :, 1], colored_img[:, :, 1], 0) + \
+             np.where(mask[:, :, 2], colored_img[:, :, 2], 0)
 
 
     """
@@ -112,8 +113,6 @@ if __name__ == "__main__":
 
 
 
-    print(get_colored_img(np.array([[5, 1, 3],
-                                    [2, 0, 6],
-                                    [7, 8, 9]])))
+
 
 
