@@ -3,8 +3,15 @@ from numpy.lib.stride_tricks import sliding_window_view
 
 
 def get_bayer_masks(n_rows, n_cols):
+    template_r = np.array([[False, True],
+                          [False, False]])
+    template_g = np.array([[True, False],
+                          [False, True]])
+    template_b = np.array([[False, False],
+                          [True, False]])
+    bayer = np.tile(np.stack([template_r, template_g, template_b], axis=2), ((n_rows + 1)// 2, (n_cols + 1) // 2, 1))
+    return bayer[:n_rows, :n_cols, :]
 
-    print('Hello, world')
     """
     :param n_rows: `int`, number of rows
     :param n_cols: `int`, number of columns
@@ -91,3 +98,6 @@ if __name__ == "__main__":
             print("PSNR (improved):", compute_psnr(img_improved, img_gt))
             common.save_image(f"imgs_improved/{img_name}", img_improved)
         print()
+
+    get_bayer_masks(5, 6)
+
