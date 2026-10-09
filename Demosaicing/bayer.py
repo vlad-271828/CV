@@ -14,7 +14,7 @@ def get_bayer_masks(n_rows, n_cols):
 
     """
     :param n_rows: `int`, number of rows
-    :param n_cols: `int`, number of columns
+    :param n_cols: `int`, number of columns 
 
     :return:
         `np.array` of shape `(n_rows, n_cols, 3)` and dtype `np.bool_`
@@ -23,6 +23,12 @@ def get_bayer_masks(n_rows, n_cols):
 
 
 def get_colored_img(raw_img):
+    mask = get_bayer_masks(raw_img.shape[0], raw_img.shape[1])
+    print(np.repeat(raw_img[:, :, None], 3, axis=2))
+    answer = np.where(mask, np.repeat(raw_img[:, :, None], 3, axis=2), 0)
+    return answer
+
+
     """
     :param raw_img:
         `np.array` of shape `(n_rows, n_cols)` and dtype `np.uint8`,
@@ -36,6 +42,10 @@ def get_colored_img(raw_img):
 
 
 def get_raw_img(colored_img):
+
+
+
+
     """
     :param colored_img:
         `np.array` of shape `(n_rows, n_cols, 3)` and dtype `np.uint8`,
@@ -99,5 +109,11 @@ if __name__ == "__main__":
             common.save_image(f"imgs_improved/{img_name}", img_improved)
         print()
 
-    get_bayer_masks(5, 6)
+
+
+
+    print(get_colored_img(np.array([[5, 1, 3],
+                                    [2, 0, 6],
+                                    [7, 8, 9]])))
+
 
