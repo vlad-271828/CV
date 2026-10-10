@@ -59,6 +59,25 @@ def get_raw_img(colored_img):
 
 
 def bilinear_interpolation(raw_img):
+    mask = get_bayer_masks(raw_img.shape[0], raw_img.shape[1])
+    image = get_colored_img(raw_img)
+    colors = []
+
+    for i in range(0, 3):
+        color = np.pad(image[:, :, i],1, mode='constant')
+        norm = np.pad(mask[:, :, i].astype(int), 1, 'constant', constant_values=(0))
+        color = sliding_window_view(color, (3, 3))
+        count = np.sum(sliding_window_view(norm, (3, 3)), axis=(2, 3))
+        color = np.where(~mask[:, :, i], np.sum(color, axis=(2, 3)) / count, image[:, :, i])
+        colors.append(np.round(color).astype('uint8'))
+
+    return np.stack(colors, axis=2)
+
+
+
+
+
+
     """
     :param raw_img:
         `np.array` of shape `(n_rows, n_cols)` and dtype `np.uint8`,
@@ -109,6 +128,7 @@ if __name__ == "__main__":
             print("PSNR (improved):", compute_psnr(img_improved, img_gt))
             common.save_image(f"imgs_improved/{img_name}", img_improved)
         print()
+
 
 
 

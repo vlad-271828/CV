@@ -59,5 +59,5 @@ t_system = 63.79
 coeff = t_system / t_local
 
 print(f"Writing coefficient {coeff:.2f}.")
-with open("../../../Downloads/Telegram Desktop/cv_week2/calibration.json", "w") as f:
+with open("/home/vlad433/PycharmProjects/CV/Demosaicing/calibration.json",  "w") as f:
     json.dump({"coefficient": coeff}, f)
