@@ -177,6 +177,14 @@ def improved_interpolation(raw_img):
 
 
 def compute_psnr(img_pred, img_gt):
+    img_pred = img_pred.astype('float64')
+    img_gt = img_gt.astype('float64')
+    mse = np.sum((img_pred - img_gt) ** 2) / (img_pred.shape[0] * img_pred.shape[1] * img_pred.shape[2])
+    if mse == 0:
+        raise ValueError
+    return 10 * np.log10((np.max((img_gt) ** 2)) / mse)
+
+
     """
     :param img_pred:
         `np.array` of shape `(n_rows, n_cols, 3)` and dtype `np.uint8`,
