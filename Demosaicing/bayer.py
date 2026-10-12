@@ -90,6 +90,82 @@ def bilinear_interpolation(raw_img):
 
 
 def improved_interpolation(raw_img):
+    mask = get_bayer_masks(raw_img.shape[0], raw_img.shape[1])
+    image = get_colored_img(raw_img) / 255
+
+    green_channel = np.pad(image[:, :, 1], 2, mode='constant')
+    green_template = np.pad(mask[:, :, 1], 2, mode='constant', constant_values=(False))
+    red_channel = np.pad(image[:, :, 0], 2, mode='constant')
+    red_template = np.pad(mask[:, :, 0], 2, mode='constant', constant_values=(False))
+    blue_channel = np.pad(image[:, :, 2], 2, mode='constant')
+    blue_template = np.pad(mask[:, :, 2], 2, mode='constant', constant_values=(False))
+
+
+
+    def channel(mask):
+        slid = sliding_window_view(raw_img / 255, (5, 5))
+        return np.clip(np.pad((slid * mask).sum(axis=(2, 3)), 4, mode='constant'), 0, 1)
+
+
+
+    green_on_red_mask = (1/8) * np.array([[0, 0, -1, 0, 0],
+                                          [0, 0, 2, 0, 0],
+                                          [-1, 2, 4, 2, -1],
+                                          [0, 0, 2, 0, 0],
+                                          [0, 0, -1, 0, 0]])
+
+    green_channel_on_red = channel(green_on_red_mask)
+    green_channel = np.where(red_template, green_channel_on_red, green_channel)
+    green_channel = np.where(blue_template, green_channel_on_red, green_channel)
+
+
+
+
+    red_on_green_mask_1 = (1/8) * np.array([[0, 0, 1/2, 0, 0],
+                                            [0, -1, 0, -1, 0],
+                                            [-1, 4, 5, 4, -1],
+                                            [0, -1, 0, -1, 0],
+                                            [0, 0, 1/2, 0, 0]])
+
+    red_channel_on_green_1 =  channel(red_on_green_mask_1)
+    green_template_1 = green_template.copy()
+    green_template_2 = green_template.copy()
+    green_template_1[1::2] *= False
+    green_template_2[0::2] *= False
+    red_channel = np.where(green_template_1, red_channel_on_green_1, red_channel)
+    blue_channel = np.where(green_template_2, red_channel_on_green_1, blue_channel)
+
+
+
+    red_on_green_mask_2 = (1/8) * np.array([[0, 0, -1, 0, 0],
+                                            [0, -1, 4, -1, 0],
+                                            [1/2, 0, 5, 0, 1/2],
+                                            [0, -1, 4, -1, 0],
+                                            [0, 0, -1, 0, 0]])
+
+    red_channel_on_green_2 =  channel(red_on_green_mask_2)
+    red_channel = np.where(green_template_2, red_channel_on_green_2, red_channel)
+    blue_channel = np.where(green_template_1, red_channel_on_green_2, blue_channel)
+
+
+    red_on_blue_mask = (1/8) * np.array([[0, 0, -3/2, 0, 0],
+                                         [0, 2, 0, 2, 0],
+                                         [-3/2, 0, 6, 0, -3/2],
+                                         [0, 2, 0, 2, 0],
+                                         [0, 0, -3/2, 0, 0]])
+
+    red_channel_on_blue = channel(red_on_blue_mask)
+    red_channel = np.where(blue_template, red_channel_on_blue, red_channel)
+    blue_channel = np.where(red_template, red_channel_on_blue, blue_channel)
+
+
+
+    return ((np.stack([red_channel[2:-2, 2:-2], green_channel[2:-2, 2:-2], blue_channel[2:-2, 2:-2]], axis=2) * 255).astype('uint8'))
+
+
+
+
+
     """
     :param raw_img:
         `np.array` of shape `(n_rows, n_cols)` and dtype `np.uint8`, raw image
